@@ -1,17 +1,19 @@
 
 const express = require('express'), bodyParser = require('body-parser');
 const cors = require('cors');
+const LocalStorage = require('node-localstorage').LocalStorage,
+localStorage = new LocalStorage('./scratch.txt');
 
 
 const app = express()
 
-
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-//app.use(express.json());
+//app.use(bodyParser.json());
+app.use(express.json());
 const port = 3000
-
+let stack = []
+load()
 
 function reverse_str(string) {
     let str = ""
@@ -34,6 +36,60 @@ function reverse_arr(array) {
     return arr
 }
 
+function save(param)
+{
+    localStorage.setItem("param", param)
+}
+
+function load()
+{
+    if (!localStorage.getItem("param")){
+        return
+    }
+    let k = localStorage.getItem("param").split(",")
+    for(var l in k) {
+        stack.push(k[l])
+    }
+}
+
+
+
+app.post('/strings', (req, res) => {
+
+    for(var k in req.body) {
+        stack.push(req.body[k])
+    }
+
+    save(stack)
+    
+    res.send(`strings sent`);
+
+});
+
+
+app.get('/strs', (req, res) => {
+    res.status(200).json({stack})
+});
+
+
+app.delete('/strings', (req, res) => {
+    let index = req.query.param
+    if (index == undefined) {
+        stack = []
+      }
+    else if (index >= 0 && index <= stack.length - 1)
+    {
+        stack.splice(index, 1);
+    }
+    else{
+        res.send(`error!!!`);
+    }
+      
+    save(stack)
+
+    res.status(200).json({stack})
+});
+
 
 app.get('/sum', (req, res) => {
     let sum = parseInt(req.query.a) + parseInt(req.query.b)
@@ -48,14 +104,6 @@ app.get('/reversecase', (req, res) => {
     res.status(200).json({result})
 });
 
-
-app.get('/reversecasewow', (req, res) => {
-
-    let result = reverse_arr(req.body.array)
-
-    res.status(200).json({result})
- 
-});
 
 app.get('/reversearray', (req, res) => {
     let result = reverse_arr(req.body.array)
