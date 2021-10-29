@@ -29,7 +29,6 @@ User.init(
         name: {
             type: Sequelize.DataTypes.STRING,
             allowNull: false,
-            
         }
         // title: {
         //     type: Sequelize.STRING,
