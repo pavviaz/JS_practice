@@ -7,6 +7,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "node-localstorage": "^2.2.1",
+    "package": "^1.0.1",
+    "pg": "^8.7.1",
     "sequelize": "^6.8.0",
     "yarn": "^1.22.11"
   },
