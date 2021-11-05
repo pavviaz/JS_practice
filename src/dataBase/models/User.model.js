@@ -30,14 +30,6 @@ User.init(
             type: Sequelize.DataTypes.STRING,
             allowNull: false,
         }
-        // title: {
-        //     type: Sequelize.STRING,
-        //     defaultValue: 'Title',
-        // },
-        // isCompleted: {
-        //     type: Sequelize.BOOLEAN,
-        //     defaultValue: false,
-        // },
     },
     { sequelize: sequelize, underscored: true, modelName: 'user', timestamps: false }
 );
