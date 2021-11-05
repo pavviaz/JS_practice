@@ -2,6 +2,7 @@
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const apiUserRouter = require('./controllers/api-user.controller');
 const apiTodosRouter = require('./controllers/api-todos.controller');
 const apiAuthRouter = require('./controllers/api-auth.controller');
 const testRouter = require('./controllers/test.controller');
@@ -40,6 +41,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/api/user', apiUserRouter);
 app.use('/api/todos', apiTodosRouter);
 app.use('/api/auth', apiAuthRouter);
 app.use('/test', testRouter);

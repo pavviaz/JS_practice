@@ -18,7 +18,7 @@ const requireToken = async (req, res, next) => {
     const token = req.header("token");
     if (!token)
     {
-        throw ErrorResponse("Token is not sent", 400)
+        throw new ErrorResponse("Token is not sent", 400)
     }
 
     // if DB contains such token 
