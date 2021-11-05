@@ -1,41 +1,24 @@
 const { Router } = require('express');
 const ErrorResponse = require('../classes/error-response');
 const ToDo = require('../dataBase/models/ToDo.model');
-const Token = require('../dataBase/models/Token.model');
-const User = require('../dataBase/models/User.model');
 const { asyncHandler, requireToken } = require('../middlewares/middlewares');
 
 const router = Router();
 
 function initRoutes() {
-    router.get('/', asyncHandler(getToDos));
-    router.get('/:id', asyncHandler(getToDoById));
-    router.post('/', asyncHandler(requireToken(createToDo)));
-    router.delete('/', asyncHandler(requireToken(deleteToDos)));
-    router.delete('/:id', asyncHandler(deleteToDoById));
-    router.patch('/:id', asyncHandler(updateToDoById))
-}
-async function findUserByToken(token) {
-    const fUser = await User.findOne({
-        where:
-        {
-            id: token.userId
-        }
-    })
-    if (!fUser)
-    {
-        throw new ErrorResponse('User not found by Id', 404);
-    }
-    return fUser
+    router.get('/', asyncHandler(requireToken), asyncHandler(getToDos));
+    router.get('/:id', asyncHandler(requireToken), asyncHandler(getToDoById));
+    router.post('/', asyncHandler(requireToken), asyncHandler(createToDo));
+    router.delete('/', asyncHandler(requireToken), asyncHandler(deleteToDos));
+    router.delete('/:id', asyncHandler(requireToken), asyncHandler(deleteToDoById));
+    router.patch('/:id', asyncHandler(requireToken), asyncHandler(updateToDoById))
 }
 
 async function getToDos(req, res, next) {
-    // const user = req.fUser
-
     const todos = await ToDo.findAll({
         where:
         {
-            userId: user.id
+            userId: req.fToken.userId
         }
     });
 
@@ -43,7 +26,13 @@ async function getToDos(req, res, next) {
 }
 
 async function getToDoById(req, res, next) {
-    const todo = await ToDo.findByPk(req.params.id);
+    const todo = await ToDo.findOne({
+        where:
+        {
+            id: req.params.id,
+            userId: req.fToken.userId
+        }
+    });
 
     if (!todo) {
         throw new ErrorResponse("ToDo is not found by id", 404);
@@ -53,19 +42,25 @@ async function getToDoById(req, res, next) {
 }
 
 async function createToDo(req, res, next) {
-    const user = await findUserByToken(req.fToken)
-    
-    req.body.userId = user.id
-    const todo = await ToDo.create(req.body);
+    const todo = await ToDo.create({
+        ...req.body,
+        userId: req.fToken.userId
+    });
 
     res.status(200).json(todo);
 }
 
 async function deleteToDoById(req, res, next) {
-    const todo = await ToDo.findByPk(req.params.id);
+    const todo = await ToDo.findOne({
+        where:
+        {
+            id: req.params.id,
+            userId: req.fToken.userId
+        }
+    });
 
     if (!todo) {
-        throw new ErrorResponse('Delete failed', 404);
+        throw new ErrorResponse("ToDo is not found by id", 404);
     }
 
     await todo.destroy();
@@ -74,28 +69,31 @@ async function deleteToDoById(req, res, next) {
 }
 
 async function deleteToDos(req, res, next) {
-    const user = await findUserByToken(req.fToken)
-
-    dlt = await ToDo.destroy({
-        where: 
+    let dlt = await ToDo.destroy({
+        where:
         {
-            userId: user.id
+            userId: req.fToken.userId
         },
         truncate: true
     });
 
-    res.status(200).json({message: dlt + " ToDos for user [" + user.name + "] have been sucessfully deleted"});
+    res.status(200).json({ message: dlt + " ToDos have been sucessfully deleted" });
 }
 
 async function updateToDoById(req, res, next) {
-    const todo = await ToDo.findByPk(req.params.id)
+    const todo = await ToDo.findOne({
+        where:
+        {
+            id: req.params.id,
+            userId: req.fToken.userId
+        }
+    });
 
     if (!todo) {
-        throw new ErrorResponse('Cant find todo by id', 404);
+        throw new ErrorResponse("ToDo is not found by id", 404);
     }
 
     await todo.update(req.body)
-    // await ToDo.update(req.body, {where: {id: req.params.id}})
 
     res.status(200).json(todo);
 }
