@@ -6,9 +6,9 @@ const { asyncHandler, requireToken } = require('../middlewares/middlewares');
 const router = Router();
 
 function initRoutes() {
-    router.get('/', asyncHandler(requireToken), asyncHandler(getUserInfo));
-    router.patch('/', asyncHandler(requireToken), asyncHandler(updateUserInfo));
-    router.post('/', asyncHandler(requireToken), asyncHandler(logoutUser));
+    router.get('/me', asyncHandler(requireToken), asyncHandler(getUserInfo));
+    router.patch('/me', asyncHandler(requireToken), asyncHandler(updateUserInfo));
+    router.post('/logout', asyncHandler(requireToken), asyncHandler(logoutUser));
 }
 
 async function getUserInfo(req, res, next) {
@@ -17,7 +17,7 @@ async function getUserInfo(req, res, next) {
         {
             id: req.fToken.userId,
         }
-    });
+    }); 
 
     if (!fUser) {
         throw new ErrorResponse("User is not found", 404);
@@ -27,13 +27,7 @@ async function getUserInfo(req, res, next) {
 }
 
 async function updateUserInfo(req, res, next) {
-    const fUser = await User.findOne({
-        where:
-        {
-            id: req.fToken.userId,
-        }
-    });
-
+    const fUser = await User.findByPk(req.fToken.userId);
     if (!fUser) {
         throw new ErrorResponse("User is not found", 404);
     }
